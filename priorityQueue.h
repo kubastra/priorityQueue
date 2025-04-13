@@ -2,7 +2,7 @@
 #define PRIORITY_H
 
 #include "setLinked.h"
-#include "tasks.h"
+#include "element.h"
 
 class priorityQueue {
 private:
