@@ -18,6 +18,27 @@ public:
     setLinked() {
         head = nullptr;
     }
+    setLinked(const setLinked &other) : head(nullptr) {
+        Node* current = other.head;
+        while (current) {
+            insert(current->value);
+            current = current->next;
+        }
+    }
+
+    setLinked &operator=(const setLinked &other) {
+        if (this == &other) return *this;
+        // najpierw usuń stare dane
+        while (!empty()) {
+            popFront();
+        }
+        Node* current = other.head;
+        while (current) {
+            insert(current->value);
+            current = current->next;
+        }
+        return *this;
+    }
 
     void insert(T x) {
         if (head == nullptr) {
@@ -78,9 +99,13 @@ public:
         }
     }
 
-    T getFirst() {
+    T popFront() {
         if (!head) throw std::runtime_error("Empty list");
-        return head->value;
+        Node* temp = head;
+        T value = head->value;
+        head = head->next;
+        delete temp;
+        return value;
     }
 
     void print() const {
@@ -91,6 +116,9 @@ public:
             current = current->next;
         }
         std::cout << std::endl;
+    }
+    bool empty() const {
+        return head == nullptr;
     }
 };
 

@@ -2,35 +2,28 @@
 #include <chrono>
 #include <fstream>
 #include <random>
+#include <iostream>
 
-int ITERATIONS = 10000;
 std::ofstream file("time.dat");
+std::ofstream file2("time2.dat");
 
-void insert_measure(priorityQueue &pq, std::string element, int iteration) {
+long long measure_insert_time(priorityQueue &pq, Element &ele) {
     auto begin = std::chrono::high_resolution_clock::now();
-    pq.insert(Element(element));
+    pq.insert(ele);
     auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
-    file << iteration << " " << duration << std::endl;
+    long long total_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+    return total_duration;
 }
 
-void pop_min_measure(priorityQueue &pq, int iteration) {
+long long pop_min_measure(priorityQueue &pq) {
+    if (pq.isEmpty()) {
+        return 0;
+    }
     auto begin = std::chrono::high_resolution_clock::now();
     pq.pop_min_priority();
     auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
-    file << iteration << " " << duration << std::endl;
-}
-
-std::string randomstringsize(int length) {
-    std::string s;
-    static const char charset[] =
-    "abcdefghijklmnopqrstuwvxyz"
-    "ABCDEFGHIJKLMNOPQRSTUWVXYZ";
-    for (int i = 0; i < length; i++) {
-        s += charset[rand() % (sizeof(charset) - 1)];
-    }
-    return s;
+    long long total_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+    return total_duration;
 }
 
 void test_1() {
@@ -43,6 +36,7 @@ void test_1() {
     pq.pop_min_priority();
     pq.print();
 }
+
 void test_2() {
     priorityQueue pq;
     pq.insert(Element("aaa"));
@@ -55,18 +49,79 @@ void test_2() {
     pq.print();
 }
 
-int main() {
-    //test_2();
-    //test_1();
-
+void run_insert_time_tests() {
+    int ITERATIONS = 10000;
     priorityQueue pq;
-    for (int i = 0; i < ITERATIONS; i++) {
-        //pesymistyczna wersja
-        std::string element(i + 10, 'a');
-        insert_measure(pq, element, i);
+    priorityQueue pq2;
+    std::string napis = "";
+    long long dur, p1, p2;
+    for (int i = 1; i < ITERATIONS; i++) {
+        napis += "a";
+        Element el = Element(napis);
+        p1 = measure_insert_time(pq, el);
+        p2 = measure_insert_time(pq2, el);
+        dur = (p1 + p2) / 2;
+
+        file << i << " " << dur << std::endl;
+    }
+}
+
+void run_pop_time_tests() {
+    int REPEATS = 3;
+    for (int size = 1; size <= 1000; size++) {
+        priorityQueue pq;
+        for (int i = 0; i < size; i++) {
+            pq.insert(Element(std::string(i + 1, 'a')));
+        }
+        long long total = 0;
+        for (int rep = 0; rep < REPEATS; rep++) {
+            priorityQueue copy = pq;
+            total += pop_min_measure(copy);
+        }
+        file2 << size << " " << (total / REPEATS) << std::endl;
+    }
+}
+
+int main() {
+    int choice;
+    bool running = true;
+
+    while (running) {
+        std::cout << "\nWybierz opcje:\n";
+        std::cout << "1. Uruchom test wstawiania\n";
+        std::cout << "2. Uruchom test usuwania minimalnego\n";
+        std::cout << "3. Uruchom testy (test 1)\n";
+        std::cout << "4. Uruchom testy (test 2)\n";
+        std::cout << "5. Zakoncz\n";
+        std::cout << "Wybor: ";
+        std::cin >> choice;
+
+        switch (choice) {
+            case 1:
+                run_insert_time_tests();
+                std::cout << "Test wstawiania zakończony.\n";
+                break;
+            case 2:
+                run_pop_time_tests();
+                std::cout << "Test usuwania minimalnego zakończony.\n";
+                break;
+            case 3:
+                test_1();
+                break;
+            case 4:
+                test_2();
+                break;
+            case 5:
+                running = false;
+                std::cout << "Zakończenie programu.\n";
+                break;
+            default:
+                std::cout << "Nieprawidłowy wybór. Spróbuj ponownie.\n";
+                break;
+        }
     }
 
     file.close();
-    std::cout << "Dane zapisane do time.dat" << std::endl;
+    file2.close();
     return 0;
 }

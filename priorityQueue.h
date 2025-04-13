@@ -17,9 +17,10 @@ public:
     }
 
     Element pop_min_priority() {
-        Element pierwszy = elementy.getFirst();
-        elementy.usuwanie(pierwszy);
-        return pierwszy;
+        return elementy.popFront();
+    }
+    bool isEmpty() const {
+        return elementy.empty();
     }
 
 };
